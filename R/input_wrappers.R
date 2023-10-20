@@ -86,6 +86,11 @@ select_input <- function(id, self, type = c("select","picker","pickersearch","vi
     options$options <- list(plugins = 'remove_button')
   }
   
+  # 'value' is synonym for 'selected' to give unified interface for all filters
+  if("value" %in% names(options)){
+    options$selected <- options$value
+    options$value <- NULL
+  }
 
   if(!("selected" %in% names(options))){
     
