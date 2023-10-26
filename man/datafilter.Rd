@@ -12,6 +12,7 @@ Make a data filter
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-NA-new}{\code{datafilter$new()}}
+\item \href{#method-NA-set_inverse}{\code{datafilter$set_inverse()}}
 \item \href{#method-NA-ui}{\code{datafilter$ui()}}
 \item \href{#method-NA-make_choices}{\code{datafilter$make_choices()}}
 \item \href{#method-NA-apply_filter}{\code{datafilter$apply_filter()}}
@@ -38,6 +39,7 @@ Make a new filter object
   round_digits = 1,
   choices = NULL,
   options = list(),
+  inverted = FALSE,
   ...,
   static = NULL,
   section = NULL,
@@ -74,6 +76,8 @@ Make a new filter object
 
 \item{\code{options}}{Options to the filter, these are settings sent to the actual filter input (e.g. 'width' to selectInput)}
 
+\item{\code{inverted}}{If it is an inverted filter, removes rows that fit the filter condition. Set with $set_inverse(TRUE)}
+
 \item{\code{...}}{Further arguments ignored}
 
 \item{\code{static}}{Deprecated}
@@ -88,6 +92,16 @@ Make a new filter object
 }
 \if{html}{\out{</div>}}
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-NA-set_inverse"></a>}}
+\if{latex}{\out{\hypertarget{method-NA-set_inverse}{}}}
+\subsection{Method \code{set_inverse()}}{
+Make a filter inverse or not
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{datafilter$set_inverse(val = TRUE)}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-NA-ui"></a>}}

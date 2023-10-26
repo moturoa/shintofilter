@@ -11,6 +11,7 @@
 #' @param round_digits For numeric-like columns, number of digits to round the filter value to (for numeric range)
 #' @param choices Optional, (named) vector of choices for select-like filters
 #' @param options Options to the filter, these are settings sent to the actual filter input (e.g. 'width' to selectInput)
+#' @param inverted If it is an inverted filter, removes rows that fit the filter condition. Set with $set_inverse(TRUE)
 #' @param ... Further arguments ignored
 #' @param static Deprecated
 #' @param section Deprecated
@@ -52,6 +53,7 @@ datafilter <- R6::R6Class(
                           round_digits = 1,
                           choices = NULL, 
                           options = list(),
+                          inverted = FALSE,
                           ...,
                           static = NULL, # deprecated
                           section = NULL, # deprecated
@@ -78,6 +80,7 @@ datafilter <- R6::R6Class(
         self$search_method <- search_method
         self$select_choices <- choices
         self$round_digits <- round_digits
+        self$inverted <- inverted
         
         # no longer args. needed to use old shinyfilterset code
         self$sort <- TRUE
@@ -99,7 +102,10 @@ datafilter <- R6::R6Class(
 
     },
     
-    
+    #' @description Make a filter inverse or not
+    set_inverted = function(val = TRUE){
+      self$inverted <- val
+    },
 
       
     #' @description Make the UI for the filter
@@ -192,17 +198,17 @@ datafilter <- R6::R6Class(
         return(data)
       }
       
+      
+      # ! out_ind are the indexes output (logical vector which rows to keep)
+      # might be inverted at the end for an inverse filter
+      coldata <- data[[colname]]
+      
       if(self$filter_ui %in% c("slider","numeric_range","date_range")){
 
         if(!self$pass_na){
-          data <- dplyr::filter(data,
-                                dplyr::between(!!rlang::sym(colname), value[1], value[2]))
+          out_ind <- dplyr::between(coldata, value[1], value[2])
         } else {
-
-          data <- dplyr::filter(data,
-                                is.na(!!rlang::sym(colname)) |
-                                  dplyr::between(!!rlang::sym(colname), value[1], value[2]))
-
+          out_ind <- is.na(coldata) | dplyr::between(coldata, value[1], value[2])
         }
 
       }
@@ -216,12 +222,12 @@ datafilter <- R6::R6Class(
           if(self$search_method == "equal"){
             
             if(!self$array_field){
-              data <- dplyr::filter(data, !!rlang::sym(colname) %in% value)    
+              out_ind <- coldata %in% value
             } else {
-              data <- dplyr::filter(data, search_array(!!rlang::sym(colname),
-                                                       what = value,
-                                                       array_separator = self$array_separator,
-                                                       array_comparison = self$array_comparison))
+              out_ind <- search_array(coldata, 
+                                      what = value,
+                                      array_separator = self$array_separator,
+                                      array_comparison = self$array_comparison)
             }
             
             
@@ -230,30 +236,38 @@ datafilter <- R6::R6Class(
           # Filter with regular expression
           else if(self$search_method == "regex"){
             regex <- paste(value, collapse = "|")
-            data <- dplyr::filter(data, grepl(regex, !!sym(colname)))
+            out_ind <- grepl(regex, coldata)
           }
           
         }
       }
       
       if(self$filter_ui == "numeric_min"){
-        data <- dplyr::filter(data, !!rlang::sym(colname) >= value)
+        out_ind <- coldata >= value
       }
 
       if(self$filter_ui == "numeric_max"){
-        data <- dplyr::filter(data, !!rlang::sym(colname) <= value)
+        out_ind <- coldata <= value
       }
 
       if(self$filter_ui == "switch"){
 
         # If the switch is OFF (FALSE), don't filter. Only filter the TRUE values if the switch is ON.
         if(value){
-          data <- dplyr::filter(data, !!sym(colname) == value)
+          out_ind <- coldata == value
         }
 
       }
       
-      return(data)  
+      # inverted filter
+      if(isTRUE(self$inverted)){
+        out_ind <- !out_ind
+      }
+      
+      # Filter rows
+      data_out <- data[out_ind,]
+      
+      return(data_out)  
       
       
     }

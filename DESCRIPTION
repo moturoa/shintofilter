@@ -1,7 +1,7 @@
 Package: shintofilter
 Type: Package
 Title: Shinto Data Filters
-Version: 0.2
+Version: 0.3
 Author: Remko Duursma
 Maintainer: Remko Duursma <remko@shintolabs.nl>
 Description: Data filters, added one by one
